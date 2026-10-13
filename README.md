@@ -34,6 +34,8 @@ The deployment pipeline follows this sequence:
 8. **Website hosting:** Amazon S3 serves the static website content.
 9. **Deployment evidence:** GitHub Actions run history, commit identifiers, and generated deployment version information help track releases.
 
+*add architecture design*
+
 ## Security Controls
 
 The project incorporates the following security measures:
