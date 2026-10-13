@@ -141,8 +141,6 @@ The following screenshots document the credential-pattern test and its results.
 
 ![Credential detector test evidence 5](https://github.com/imed3721/operation-skyfall/blob/0c3736603822c1300ef1b844ad1b1e74da7c6f3e/screenshots/Screenshot%202026-10-13%20at%2009.13.56.png?raw=1)
 
-**Security limitation:** This detector uses predefined text patterns and checks only the specified website source files. It is a basic safeguard, not a comprehensive secret-scanning solution. It may miss credentials that do not match the configured patterns, and it does not necessarily inspect the full repository or Git history. Dedicated secret-scanning tools provide broader detection capabilities.
-
 ## Limitations and Risks
 
 Operation Skyfall is a learning project designed to demonstrate core DevOps and cloud security concepts. It is not a production-hardened hosting platform.
