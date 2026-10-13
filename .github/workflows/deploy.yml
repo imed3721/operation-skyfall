@@ -33,6 +33,11 @@ jobs:
 
           echo "Required website files and basic HTML checks passed."
 
+      - name: Scan repository history for secrets
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   deploy:
     name: Deploy approved website to S3
     needs: validate
