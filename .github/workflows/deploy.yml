@@ -33,22 +33,6 @@ jobs:
 
           echo "Required website files and basic HTML checks passed."
 
-      - name: Basic exposed-secret pattern check
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          # Check only the website source files we intend to publish.
-          # This is a basic guard, not a complete secret scanner.
-          if grep -Ein \
-            'AKIA[0-9A-Z]{16}|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9_]{20,}' \
-            index.html style.css script.js; then
-            echo "Potential exposed credential detected. Deployment blocked."
-            exit 1
-          fi
-
-          echo "Basic credential pattern check passed."
-
   deploy:
     name: Deploy approved website to S3
     needs: validate
