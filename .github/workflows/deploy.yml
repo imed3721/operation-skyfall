@@ -1,0 +1,103 @@
+name: Operation Skyfall - Secure Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate website and scan for secrets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Validate required website files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s index.html
+          test -s style.css
+          test -s script.js
+
+          grep -qi '<!doctype html>' index.html
+          grep -q 'style.css' index.html
+          grep -q 'script.js' index.html
+
+          echo "Required website files and basic HTML checks passed."
+
+      - name: Basic exposed-secret pattern check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Check only the website source files we intend to publish.
+          # This is a basic guard, not a complete secret scanner.
+          if grep -Ein \
+            'AKIA[0-9A-Z]{16}|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9_]{20,}' \
+            index.html style.css script.js; then
+            echo "Potential exposed credential detected. Deployment blocked."
+            exit 1
+          fi
+
+          echo "Basic credential pattern check passed."
+
+  deploy:
+    name: Deploy approved website to S3
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Generate deployment version
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '{"version":"%s"}\n' "$GITHUB_SHA" > version.json
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: Skyfall-${{ github.run_id }}
+
+      - name: Upload approved website files
+        shell: bash
+        env:
+          BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+        run: |
+          set -euo pipefail
+
+          aws s3 cp index.html "s3://${BUCKET_NAME}/index.html" \
+            --content-type "text/html; charset=utf-8"
+
+          aws s3 cp style.css "s3://${BUCKET_NAME}/style.css" \
+            --content-type "text/css; charset=utf-8"
+
+          aws s3 cp script.js "s3://${BUCKET_NAME}/script.js" \
+            --content-type "text/javascript; charset=utf-8"
+
+          aws s3 cp version.json "s3://${BUCKET_NAME}/version.json" \
+            --content-type "application/json"
+
+      - name: Report deployment version
+        shell: bash
+        run: |
+          echo "Successfully uploaded website files."
+          echo "Commit: $GITHUB_SHA"
+          echo "Run ID: $GITHUB_RUN_ID"
