@@ -164,7 +164,6 @@ operation-skyfall/
 ├── index.html
 ├── style.css
 ├── script.js
-├── version.json
 └── README.md
 ```
 
@@ -175,7 +174,6 @@ operation-skyfall/
 | `index.html` | Website structure and mission portal content. |
 | `style.css` | Website styling and layout. |
 | `script.js` | Client-side interactions. |
-| `version.json` | Generated deployment version information. |
 | `.github/workflows/deploy.yml` | Website validation, credential-pattern checks, and AWS deployment workflow. |
 | `screenshots/` | Evidence captured during the documented tests. |
 | `README.md` | Project documentation, architecture, security controls, limitations, and test evidence. |
